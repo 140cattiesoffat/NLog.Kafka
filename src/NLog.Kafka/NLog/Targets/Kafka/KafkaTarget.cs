@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using Confluent.Kafka;
 using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
@@ -15,12 +16,13 @@ namespace NLog.Targets.Kafka
         public KafkaTarget()
         {
             base.Layout = "${message}";
+            _config = new ProducerConfig();
         }
         #endregion
 
         #region fields
 
-
+        private ProducerConfig _config;
         private KafkaProducer Producer { get; set; }
 
         #endregion
@@ -40,10 +42,6 @@ namespace NLog.Targets.Kafka
 
         public string Password { get; set; }
 
-        public string Prototype { get; set; }
-
-        public bool Async { get; set; } = true;
-
         public bool Debug { get; set; } = false;
 
         #endregion
@@ -61,16 +59,13 @@ namespace NLog.Targets.Kafka
                     throw new BrokerNotFoundException("Broker is not found");
                 }
 
-                if (Async)
-                {
-                    //producer = new KafkaProducerAsync(Brokers);
-                }
-                else
-                {
-                    //producer = new KafkaProducerSync(Brokers);
-                }
+                _config.BootstrapServers = Brokers;
+                //_config.SecurityProtocol = SecurityProtocolType.Sasl_Plaintext;
+                //_config.SaslMechanism = SaslMechanismType.Plain;
+                //_config.SaslUsername = Username;
+                //_config.SaslPassword = Password;
 
-                Producer = new KafkaProducer(Brokers);
+                Producer = new KafkaProducer(_config);
             }
             catch (Exception ex)
             {

@@ -7,18 +7,12 @@ namespace NLog.Targets.Kafka
 {
     public class KafkaProducer : IDisposable
     {
-        readonly ProducerConfig _cfg;
-        readonly Producer<string, string> _producer;
+        private readonly Producer<string, string> _producer;
 
-        public KafkaProducer(string brokers)
+        public KafkaProducer(ProducerConfig cfg)
         {
-            _cfg = new ProducerConfig
-            {
-                BootstrapServers = brokers
-            };
-            _producer = new Producer<string, string>(_cfg);
+            _producer = new Producer<string, string>(cfg);
         }
-
 
         public void Produce(string topic, string data)
         {
