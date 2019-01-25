@@ -20,7 +20,8 @@ namespace NLog.Targets.Kafka
 
         #region fields
 
-        private readonly KafkaProducer _producer;
+
+        private KafkaProducer Producer { get; set; }
 
         #endregion
 
@@ -34,8 +35,6 @@ namespace NLog.Targets.Kafka
 
         [RequiredParameter]
         public Layout Topic { get; set; }
-
-        public JsonLayout Layout { get; set; }
 
         public string Username { get; set; }
 
@@ -70,6 +69,8 @@ namespace NLog.Targets.Kafka
                 {
                     //producer = new KafkaProducerSync(Brokers);
                 }
+
+                Producer = new KafkaProducer(Brokers);
             }
             catch (Exception ex)
             {
@@ -86,7 +87,7 @@ namespace NLog.Targets.Kafka
             base.CloseTarget();
             try
             {
-                _producer?.Dispose();
+                Producer?.Dispose();
             }
             catch (Exception ex)
             {
@@ -103,8 +104,8 @@ namespace NLog.Targets.Kafka
             {
                 var topic = Topic.Render(logEvent);
                 var logMessage = Layout.Render(logEvent);
-                var data = Encoding.UTF8.GetBytes(logMessage);
-                //_producer.Produce(ref topic, ref data);
+                //var data = Encoding.UTF8.GetBytes(logMessage);
+                Producer.Produce(topic, logMessage);
             }
             catch (Exception ex)
             {
