@@ -2,13 +2,18 @@
 
   <PropertyGroup>
     <ProductName>NLog.Kafka</ProductName>
+    <Authors>Tairan Wang</Authors>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix>alpha.1</VersionSuffix>
+    <VersionSuffix></VersionSuffix>
     <Description>A NLog target that post to Kafka queue.</Description>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageTags>NLog;Kafka</PackageTags>
+    <Title>A NLog Kafka target.</Title>
+    <PackageProjectUrl>https://github.com/tairan/NLog.Kafka</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/tairan/NLog.Kafka</RepositoryUrl>
   </PropertyGroup>
 </Project>
