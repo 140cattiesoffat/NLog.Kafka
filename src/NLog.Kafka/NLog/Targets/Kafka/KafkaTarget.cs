@@ -60,10 +60,15 @@ namespace NLog.Targets.Kafka
                 }
 
                 _config.BootstrapServers = Brokers;
-                //_config.SecurityProtocol = SecurityProtocolType.Sasl_Plaintext;
-                //_config.SaslMechanism = SaslMechanismType.Plain;
-                //_config.SaslUsername = Username;
-                //_config.SaslPassword = Password;
+
+                // FIXME: find a better way to process kafka producer config.
+                if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
+                {
+                    _config.SecurityProtocol = SecurityProtocolType.Sasl_Plaintext;
+                    _config.SaslMechanism = SaslMechanismType.Plain;
+                    _config.SaslUsername = Username;
+                    _config.SaslPassword = Password;
+                }
 
                 Producer = new KafkaProducer(_config);
             }
