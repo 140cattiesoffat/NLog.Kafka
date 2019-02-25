@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using Confluent.Kafka;
 using NLog.Config;
@@ -12,11 +13,14 @@ namespace NLog.Targets.Kafka
     [Target("Kafka")]
     public class KafkaTarget : TargetWithLayout
     {
+        private readonly List<KeyValuePair<string, string>> _options;
+
         #region ctor
         public KafkaTarget()
         {
             base.Layout = "${message}";
-            _config = new ProducerConfig();
+            _options = new List<KeyValuePair<string, string>>();
+            Properties = new List<KafkaProducerConfig>();
         }
         #endregion
 
@@ -28,21 +32,17 @@ namespace NLog.Targets.Kafka
         #endregion
 
         #region properties
-        /// <summary>
-        /// Kafka brokers with comma-separated
-        /// </summary>
-        [RequiredParameter]
-        [DefaultValue("localhost:9092")]
-        public string Brokers { get; set; }
-
-        [RequiredParameter]
-        public Layout Topic { get; set; }
-
-        public string Username { get; set; }
-
-        public string Password { get; set; }
+        
+        [ArrayParameter(typeof(KafkaProducerConfig), "property")]
+        public IList<KafkaProducerConfig> Properties { get; private set; }
 
         public bool Debug { get; set; } = false;
+
+        [RequiredParameter]
+        public string Topic { get; set; }
+
+        [DefaultValue("localhost:9092")]
+        public string BootstrapServers { get; set; }
 
         #endregion
 
@@ -54,21 +54,20 @@ namespace NLog.Targets.Kafka
 
             try
             {
-                if (Brokers == null || Brokers.Length == 0)
+                if (string.IsNullOrWhiteSpace(Topic))
                 {
-                    throw new BrokerNotFoundException("Broker is not found");
+                    throw new ArgumentNullException(nameof(Topic));
                 }
 
-                _config.BootstrapServers = Brokers;
-
-                // FIXME: find a better way to process kafka producer config.
-                if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
+                foreach (var item in Properties)
                 {
-                    _config.SecurityProtocol = SecurityProtocolType.Sasl_Plaintext;
-                    _config.SaslMechanism = SaslMechanismType.Plain;
-                    _config.SaslUsername = Username;
-                    _config.SaslPassword = Password;
+                    _options.Add(new KeyValuePair<string, string>(item.Name, item.Value));
                 }
+
+                _config = new ProducerConfig(_options)
+                {
+                    BootstrapServers = BootstrapServers
+                };
 
                 Producer = new KafkaProducer(_config);
             }
@@ -78,6 +77,7 @@ namespace NLog.Targets.Kafka
                 {
                     Console.WriteLine(ex.ToString());
                 }
+
                 base.CloseTarget();
             }
         }
@@ -102,10 +102,8 @@ namespace NLog.Targets.Kafka
         {
             try
             {
-                var topic = Topic.Render(logEvent);
                 var logMessage = Layout.Render(logEvent);
-                //var data = Encoding.UTF8.GetBytes(logMessage);
-                Producer.Produce(topic, logMessage);
+                Producer.Produce(Topic, logMessage);
             }
             catch (Exception ex)
             {
