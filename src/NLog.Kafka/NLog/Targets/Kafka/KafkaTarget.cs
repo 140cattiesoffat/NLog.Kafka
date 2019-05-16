@@ -83,17 +83,6 @@ namespace NLog.Targets.Kafka
         protected override void CloseTarget()
         {
             base.CloseTarget();
-            try
-            {
-                Producer?.Dispose();
-            }
-            catch (Exception ex)
-            {
-                if (Debug)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
         }
 
         protected override void Write(LogEventInfo logEvent)
@@ -101,7 +90,7 @@ namespace NLog.Targets.Kafka
             try
             {
                 var logMessage = Layout.Render(logEvent);
-                Producer.Produce(Topic, logMessage);
+                _ = Producer.ProduceAsync(Topic, logMessage);
             }
             catch (Exception ex)
             {
