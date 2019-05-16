@@ -7,11 +7,11 @@ namespace NLog.Targets.Kafka
 {
     public class KafkaProducer : IDisposable
     {
-        private readonly Producer<string, string> _producer;
+        private readonly IProducer<string, string> _producer;
 
         public KafkaProducer(ProducerConfig cfg)
         {
-            _producer = new Producer<string, string>(cfg);
+            _producer = new ProducerBuilder<string, string>(cfg).Build();
         }
 
         public void Produce(string topic, string data)
