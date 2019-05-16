@@ -11,6 +11,11 @@ namespace NLog.Targets.Kafka
 
         public KafkaProducer(ProducerConfig cfg)
         {
+            if (cfg == null)
+            {
+                throw new ArgumentNullException(nameof(cfg));
+            }
+
             _producer = new ProducerBuilder<string, string>(cfg).Build();
         }
 

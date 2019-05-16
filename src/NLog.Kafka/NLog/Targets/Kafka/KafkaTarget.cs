@@ -2,24 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using Confluent.Kafka;
 using NLog.Config;
 using NLog.Layouts;
-using NLog.Targets;
 
 namespace NLog.Targets.Kafka
 {
     [Target("Kafka")]
     public class KafkaTarget : TargetWithLayout
     {
-        private readonly List<KeyValuePair<string, string>> _options;
-
         #region ctor
         public KafkaTarget()
         {
             base.Layout = "${message}";
-            _options = new List<KeyValuePair<string, string>>();
             Properties = new List<KafkaProducerConfig>();
         }
         #endregion
@@ -32,7 +27,7 @@ namespace NLog.Targets.Kafka
         #endregion
 
         #region properties
-        
+
         [ArrayParameter(typeof(KafkaProducerConfig), "property")]
         public IList<KafkaProducerConfig> Properties { get; private set; }
 
@@ -59,15 +54,18 @@ namespace NLog.Targets.Kafka
                     throw new ArgumentNullException(nameof(Topic));
                 }
 
-                foreach (var item in Properties)
+                var config = Properties?.Select(p => new KeyValuePair<string, string>(p.Name, p.Value));
+
+                if (config == null)
                 {
-                    _options.Add(new KeyValuePair<string, string>(item.Name, item.Value));
+                    _config = new ProducerConfig();
+                }
+                else
+                {
+                    _config = new ProducerConfig(config);
                 }
 
-                _config = new ProducerConfig(_options)
-                {
-                    BootstrapServers = BootstrapServers
-                };
+                _config.BootstrapServers = BootstrapServers;
 
                 Producer = new KafkaProducer(_config);
             }
