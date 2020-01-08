@@ -54,7 +54,9 @@ namespace NLog.Targets.Kafka
                     throw new ArgumentNullException(nameof(Topic));
                 }
 
-                var config = Properties?.Select(p => new KeyValuePair<string, string>(p.Name, p.Value));
+                var config = Properties?
+                    .Select(p => new KeyValuePair<string, string>(p.Name, p.Value))
+                    .ToDictionary(x => x.Key, x => x.Value);
 
                 if (config == null)
                 {
